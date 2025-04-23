@@ -1,3 +1,4 @@
+import 'package:educonnect/home_screen.dart';
 import 'package:educonnect/main.dart';
 import 'package:educonnect/register_screen.dart';
 import 'package:flutter/material.dart';
@@ -13,15 +14,36 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && !user.emailVerified) {
+        // Cierra la sesión porque no verificó el correo
+        await FirebaseAuth.instance.signOut();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Debes verificar tu correo electrónico antes de continuar.'),
+          ),
+        );
+        return;
+      }
+
+      // Aquí lo mandas al Home porque sí está verificado
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen()), // Cambia por tu pantalla principal
       );
-      print('Login exitoso');
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
     } on FirebaseAuthException catch (e) {
-      print('Error: ${e.code} - ${e.message}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
       );
@@ -31,41 +53,43 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Iniciar sesión')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-
-          children: [
-            Image.asset(
-            'assets/logo_educonnect.png',
-            height: 250),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Correo electrónico'),
+        appBar: AppBar(title: Text('Iniciar sesión')),
+        body: SafeArea(
+            child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Image.asset('assets/logo_educonnect.png', height: 250),
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: 'Correo electrónico'),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(labelText: 'Contraseña'),
+                  obscureText: true,
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _login,
+                  child: Text('Iniciar sesión'),
+                ),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RegisterScreen()));
+                    },
+                    child: Text(
+                      '¿NO TIENES UNA CUENTA? REGISTRATE',
+                      style: TextStyle(color: Colors.blue),
+                    ))
+              ],
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Iniciar sesión'),
-            ),
-            TextButton(
-              onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
-              },
-              child: Text(
-                '¿NO TIENES UNA CUENTA? REGISTRATE',
-                style: TextStyle(color: Colors.blue),
-              ))
-          ],
-        ),
-      ),
-    );
+          ),
+        )));
   }
 }
