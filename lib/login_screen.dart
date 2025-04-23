@@ -1,3 +1,5 @@
+import 'package:educonnect/main.dart';
+import 'package:educonnect/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -17,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       print('Login exitoso');
-      // Navega a otra pantalla si quieres
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
     } on FirebaseAuthException catch (e) {
       print('Error: ${e.code} - ${e.message}');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -33,11 +35,16 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+
           children: [
+            Image.asset(
+            'assets/logo_educonnect.png',
+            height: 250),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Correo electrónico'),
             ),
+            SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(labelText: 'Contraseña'),
@@ -48,6 +55,14 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _login,
               child: Text('Iniciar sesión'),
             ),
+            TextButton(
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+              },
+              child: Text(
+                '¿NO TIENES UNA CUENTA? REGISTRATE',
+                style: TextStyle(color: Colors.blue),
+              ))
           ],
         ),
       ),
