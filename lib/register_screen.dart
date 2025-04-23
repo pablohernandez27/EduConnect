@@ -42,6 +42,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    if (!email.endsWith('@alu.murciaeduca.es')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'El correo debe ser de dominio @alu.murciaeduca.es',
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+      return;
+    }
+
+
     try {
       // Crear el usuario
       UserCredential userCredential = await FirebaseAuth.instance
