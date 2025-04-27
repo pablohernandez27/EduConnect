@@ -2,8 +2,8 @@ import 'package:educonnect/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'login_screen.dart';
+import 'screen/home_screen.dart';
+import 'user_authentication/login_screen.dart';
 
 
 
