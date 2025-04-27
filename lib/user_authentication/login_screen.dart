@@ -1,6 +1,6 @@
-import 'package:educonnect/home_screen.dart';
+import 'package:educonnect/screen/home_screen.dart';
 import 'package:educonnect/main.dart';
-import 'package:educonnect/register_screen.dart';
+import 'package:educonnect/user_authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

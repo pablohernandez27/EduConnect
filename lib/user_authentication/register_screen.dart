@@ -1,4 +1,4 @@
-import 'package:educonnect/login_screen.dart';
+import 'package:educonnect/user_authentication/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
