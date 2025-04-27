@@ -22,7 +22,7 @@ class CreateForoScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 //Verificar que se ha introducido el título y la descripción
-                if(_titleController.text.isEmpty && _descController.text.isEmpty){
+                if(_titleController.text.isEmpty || _descController.text.isEmpty){
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Título y descripción son requeridos'))
                   );
