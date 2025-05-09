@@ -4,7 +4,7 @@ import '../models/foro.dart';
 import 'foro_screen.dart';
 import 'create_foro_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class TaskScreen extends StatelessWidget {
   final _firestoreService = FirestoreService();
 
   @override

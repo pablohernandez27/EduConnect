@@ -1,4 +1,5 @@
 import 'package:educonnect/firebase_options.dart';
+import 'package:educonnect/screen/DashboardPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class AuthWrapper extends StatelessWidget {
 
         // 3. Si el usuario está autenticado, mostrar la pantalla principal
         if (snapshot.hasData && snapshot.data != null) {
-          return HomeScreen(); // Aquí iría la pantalla principal de tu app
+          return DashboardPage(currentTab: 0);
         }
 
         // 4. Si el usuario NO está autenticado, mostrar la pantalla de login
