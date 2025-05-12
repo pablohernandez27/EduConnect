@@ -10,7 +10,20 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Foros')),
+      appBar: AppBar(
+        title: Text('Foros'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => CreateForoScreen()),
+              );
+            },
+            icon: Icon(Icons.forum),
+          ),
+        ],
+      ),
       body: StreamBuilder<List<Foro>>(
         stream: _firestoreService.getForos(),
         builder: (context, snapshot) {
@@ -32,14 +45,6 @@ class HomeScreen extends StatelessWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-            builder: (_) => CreateForoScreen(),
-          ));
-        },
-        child: Icon(Icons.add),
       ),
     );
   }
