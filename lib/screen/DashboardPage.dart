@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -68,14 +69,18 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                       onTap: () => Navigator.pop(context),
                     ),
                     ListTile(
-                      leading: Icon(Icons.settings),
-                      title: Text('Configuración'),
-                      onTap: () => Navigator.pop(context),
-                    ),
-                    ListTile(
                       leading: Icon(Icons.logout),
                       title: Text('Cerrar sesión'),
-                      onTap: () => Navigator.pop(context),
+                      onTap: () async {
+                        try {
+                          await FirebaseAuth.instance.signOut();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Sesión cerrada correctamente.')),
+                          );
+                        }catch(e){
+                          print ("Error al cerrar la sesión.");
+                        }
+                      },
                     ),
                   ],
                 ),
