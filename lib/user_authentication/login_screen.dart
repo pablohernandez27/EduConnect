@@ -36,13 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Aquí lo mandas al Home porque sí está verificado
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                HomeScreen()), // Cambia por tu pantalla principal
-      );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
