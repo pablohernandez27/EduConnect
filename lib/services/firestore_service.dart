@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/foro.dart';
 import '../models/post.dart';
+import '../models/tarea.dart';
 
 class FirestoreService {
   final _db = FirebaseFirestore.instance;
@@ -34,5 +35,57 @@ class FirestoreService {
       'createdBy': userId,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Stream<List<Tarea>> getTareas(String userId) {
+    return _db
+        .collection('tareas')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true) 
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Tarea.fromMap(doc.id, doc.data()))
+        .toList());
+  }
+
+  Future<void> createTarea({
+    required String titulo,
+    String? descripcion,
+    DateTime? fechaEntrega,
+    required String userId,
+  }) async {
+    await _db.collection('tareas').add({
+      'titulo': titulo,
+      'descripcion': descripcion,
+      'fechaEntrega': fechaEntrega != null ? Timestamp.fromDate(fechaEntrega) : null,
+      'completada': false,
+      'userId': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateTareaCompletada(String tareaId, bool completada) async {
+    await _db.collection('tareas').doc(tareaId).update({
+      'completada': completada,
+    });
+  }
+
+  Future<void> updateTarea({
+    required String tareaId,
+    required String titulo,
+    String? descripcion,
+    DateTime? fechaEntrega,
+    required bool completada,
+  }) async {
+    await _db.collection('tareas').doc(tareaId).update({
+      'titulo': titulo,
+      'descripcion': descripcion,
+      'fechaEntrega': fechaEntrega != null ? Timestamp.fromDate(fechaEntrega) : null,
+      'completada': completada,
+    });
+  }
+
+  Future<void> deleteTarea(String tareaId) async {
+    await _db.collection('tareas').doc(tareaId).delete();
   }
 }
