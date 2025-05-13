@@ -4,13 +4,13 @@ import '../models/foro.dart';
 import 'foro_screen.dart';
 import 'create_foro_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class FavoriteScreen extends StatelessWidget {
   final _firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Foros')),
+      appBar: AppBar(title: Text('Foros Favoritos')),
       body: StreamBuilder<List<Foro>>(
         stream: _firestoreService.getForos(),
         builder: (context, snapshot) {
