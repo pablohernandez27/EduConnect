@@ -65,22 +65,39 @@ class ChatListScreen extends StatelessWidget {
                   final userData = userSnapshot.data!;
                   final userEmail = userData['email'] ?? 'Usuario desconocido';
 
-                  return ListTile(
-                    leading: const Icon(Icons.chat_bubble_outline),
-                    title: Text(userEmail),
-                    subtitle: const Text("Toca para continuar el chat"),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatScreen(
-                            chatId: chatId,
-                            receiverId: otherUserId,
-                          ),
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blueAccent,
+                        child: Text(
+                          userEmail[0].toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
-                      );
-                    },
+                      ),
+                      title: Text(
+                        userEmail,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: const Text("Toca para continuar el chat"),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatScreen(
+                              chatId: chatId,
+                              receiverId: otherUserId,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   );
+
                 },
               );
             },
