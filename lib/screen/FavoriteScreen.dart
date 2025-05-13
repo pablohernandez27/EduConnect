@@ -10,7 +10,7 @@ class FavoriteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Foros')),
+      appBar: AppBar(title: Text('Foros Favoritos')),
       body: StreamBuilder<List<Foro>>(
         stream: _firestoreService.getForos(),
         builder: (context, snapshot) {
