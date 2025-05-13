@@ -30,17 +30,37 @@ class HomeScreen extends StatelessWidget {
           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
           final foros = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: foros.length,
             itemBuilder: (context, index) {
               final foro = foros[index];
-              return ListTile(
-                title: Text(foro.title),
-                subtitle: Text(foro.description),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => ForoScreen(foro: foro),
-                  ));
-                },
+              return Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blueAccent.shade100,
+                    child: Icon(Icons.forum, color: Colors.white),
+                  ),
+                  title: Text(
+                    foro.title,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    foro.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ForoScreen(foro: foro)),
+                    );
+                  },
+                ),
               );
             },
           );
