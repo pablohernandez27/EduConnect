@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educonnect/screen/home_screen.dart';
 import 'package:educonnect/main.dart';
 import 'package:educonnect/user_authentication/register_screen.dart';
@@ -34,6 +35,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
         return;
+      }
+
+      // Guardar el usuario en base de datos para poder hacer consultas.
+      if (user != null && user.emailVerified) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': user.email,
+        }, SetOptions(merge: true)); // merge: true evita sobreescribir
       }
 
     } on FirebaseAuthException catch (e) {

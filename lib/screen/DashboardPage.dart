@@ -1,19 +1,21 @@
+import 'package:educonnect/screen/chat_list_screen.dart';
+import 'package:educonnect/screen/create_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'BottomNavbar.dart';
-import 'ChatsScreen.dart';
-import 'FavoriteScreen.dart';
-import 'TaskScreen.dart';
+import 'chat_screen.dart';
+import 'favorite_screen.dart';
+import 'task_screen.dart';
 import 'home_screen.dart';
 
 class DashboardPage extends StatefulWidget {
   int currentTab;
   int? indexSelectTab;
   Widget currentPage = HomeScreen();
-
+  String? idCurrentUser = FirebaseAuth.instance.currentUser?.uid;
   DashboardPage({super.key, required this.currentTab, this.indexSelectTab});
 
   @override
@@ -139,8 +141,8 @@ class _DashboardPageState extends State<DashboardPage>
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   HomeScreen(),
+                  ChatListScreen(),
                   FavoriteScreen(),
-                  ChatsScreen(),
                   TaskScreen(),
                 ],
               ),
