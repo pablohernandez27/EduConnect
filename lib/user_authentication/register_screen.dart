@@ -91,40 +91,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Registrar cuenta'),
-        ),
-        body: SafeArea(
-            child: SingleChildScrollView(
+      appBar: AppBar(
+        title: Text('Registrar cuenta'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Image.asset('assets/logo_educonnect.png', height: 250),
+                Image.asset('assets/logo_educonnect.png', height: 200),
+                const SizedBox(height: 40),
+                Text(
+                  'Regístrate en EduConnect',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
                 TextField(
                   controller: _emailController,
-                  decoration: InputDecoration(labelText: 'Correo electrónico'),
+                  decoration: InputDecoration(
+                    labelText: 'Correo electrónico',
+                    prefixIcon: Icon(Icons.email),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 12),
                 TextField(
                   controller: _passwordController,
-                  decoration: InputDecoration(labelText: 'Contraseña'),
                   obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    prefixIcon: Icon(Icons.lock),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 12),
                 TextField(
                   controller: _confirmPasswordController,
-                  decoration:
-                      InputDecoration(labelText: 'Confirmar Contraseña'),
                   obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar Contraseña',
+                    prefixIcon: Icon(Icons.lock),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                SizedBox(
-                  height: 20,
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Registrarse',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
-                ElevatedButton(onPressed: _register, child: Text('Registrarse'))
               ],
             ),
           ),
-        )));
+        ),
+      ),
+    );
   }
+
 }
