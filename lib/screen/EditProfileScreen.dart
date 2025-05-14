@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/user.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -52,6 +56,99 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      await _requestPermission(Permission.camera);
+    } else {
+      if (Platform.isAndroid) {
+        final sdkInt = int.parse((await DeviceInfoPlugin().androidInfo).version.sdkInt.toString());
+        if (sdkInt >= 33) {
+          await _requestPermission(Permission.photos);
+        } else {
+          await _requestPermission(Permission.storage);
+        }
+      } else {
+        await _requestPermission(Permission.photos);
+      }
+    }
+
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final ref = FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
+
+      try {
+        // Subir archivo
+        await ref.putFile(File(pickedFile.path));
+
+        // Obtener URL
+        final url = await ref.getDownloadURL();
+
+        // Guardar en Firestore
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'photoUrl': url,
+        });
+
+        // Actualizar estado local
+        setState(() {
+          _user = _user?.copyWith(photoUrl: url);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Foto de perfil actualizada')),
+        );
+      } catch (e) {
+        print('Error al subir imagen: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al subir la imagen')),
+        );
+      }
+    }
+  }
+
+
+  Future<void> _requestPermission(Permission permission) async {
+    if (await permission.isGranted) return;
+
+    final status = await permission.request();
+    if (status != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Permiso denegado: $permission')),
+      );
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo),
+              title: Text('Galería'),
+              onTap: () {
+                Navigator.pop(context);
+
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Cámara'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +162,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: _user?.photoUrl != null
+                          ? NetworkImage(_user!.photoUrl!)
+                          : null,
+                      child: _user?.photoUrl == null
+                          ? Icon(Icons.person, size: 50)
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _showImageSourceDialog,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.blue,
+                          radius: 18,
+                          child: Icon(Icons.edit, size: 18, color: Colors.white),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: 'Nombre de usuario'),

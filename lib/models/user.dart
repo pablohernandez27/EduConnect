@@ -34,4 +34,18 @@ class AppUser {
       'photoUrl': photoUrl,
     };
   }
+  AppUser copyWith({
+    String? displayName,
+    String? phoneNumber,
+    String? photoUrl,
+  }) {
+    return AppUser(
+      uid: uid,
+      email: email,
+      displayName: displayName ?? this.displayName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      photoUrl: photoUrl ?? this.photoUrl,
+    );
+  }
+
 }
