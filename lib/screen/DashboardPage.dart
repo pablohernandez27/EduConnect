@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'BottomNavbar.dart';
+import 'EditProfileScreen.dart';
 import 'chat_screen.dart';
 import 'favorite_screen.dart';
 import 'task_screen.dart';
@@ -98,11 +99,44 @@ class _DashboardPageState extends State<DashboardPage>
                       )
 
                   ),
-                  ListTile(
+                  ExpansionTile(
                     leading: Icon(Icons.settings),
                     title: Text('Configuración'),
-                    onTap: () => Navigator.pop(context),
+                    children: [
+                      ListTile(
+                        leading: Icon(Icons.person),
+                        title: Text('Editar perfil'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen()));
+                        },
+                      ),
+                      ExpansionTile(
+                        leading: Icon(Icons.lock),
+                        title: Text('Seguridad de la cuenta'),
+                        children: [
+                          ListTile(
+                            leading: Icon(Icons.lock_reset),
+                            title: Text('Restablecer contraseña'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              //Navigator.push(context, MaterialPageRoute(builder: (_) => ResetPasswordScreen()));
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.delete_forever),
+                            title: Text('Eliminar cuenta'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              //Navigator.push(context, MaterialPageRoute(builder: (_) => DeleteAccountScreen()));
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
+
+
                   ListTile(
                     leading: Icon(Icons.logout),
                     title: Text('Cerrar sesión'),
