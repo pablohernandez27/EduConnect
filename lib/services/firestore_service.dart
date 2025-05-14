@@ -19,6 +19,7 @@ class FirestoreService {
         ).toList());
   }
 
+
   Future<void> createForo(String title, String description, String userId) async {
     await _db.collection('foros').add({
       'title': title,
@@ -35,4 +36,13 @@ class FirestoreService {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> toggleFavorite(Foro foro) async {
+    await FirebaseFirestore.instance
+        .collection('foros')
+        .doc(foro.id)
+        .update({'isFavorite': !foro.isFavorite});
+  }
+
+
 }

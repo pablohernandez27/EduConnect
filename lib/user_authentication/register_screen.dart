@@ -12,11 +12,13 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _displayNameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   Future<void> _register() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final displayName = _displayNameController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
     if (password != confirmPassword) {
@@ -61,8 +63,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
+// Obtener usuario creado
+      User? firebaseUser = userCredential.user;
+
+// Actualizar displayName en FirebaseAuth
+      await firebaseUser!.updateDisplayName(displayName);
+      await firebaseUser.reload();
+
+// Guardar en Firestore
+      await FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid).set({
+        'email': firebaseUser.email,
+        'displayName': displayName,
+        'photoUrl': null,
+        'phoneNumber': null,
+      });
+
+
       // Enviar correo de verificación
-      await userCredential.user!.sendEmailVerification();
+      await firebaseUser.sendEmailVerification();
 
       // Cerrar sesión para forzar verificación antes de login
       await FirebaseAuth.instance.signOut();
@@ -86,6 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
     }
+
   }
 
   @override
@@ -121,6 +140,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _displayNameController,
+                  decoration: InputDecoration(
+                    labelText: 'nombre se usuario',
+                    prefixIcon: Icon(Icons.person),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 12),
                 TextField(
                   controller: _passwordController,
