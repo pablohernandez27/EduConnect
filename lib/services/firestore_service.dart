@@ -37,4 +37,12 @@ class FirestoreService {
     });
   }
 
+  Future<void> toggleFavorite(Foro foro) async {
+    await FirebaseFirestore.instance
+        .collection('foros')
+        .doc(foro.id)
+        .update({'isFavorite': !foro.isFavorite});
+  }
+
+
 }

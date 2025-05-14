@@ -1,36 +1,33 @@
-class UserModel {
-  final String uid;
-  final String username;
-  final String bornDate;
-  final String phone;
-  final String profileImage;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  UserModel({
+class AppUser {
+  final String uid;
+  final String email;
+  final String? displayName;
+  final String? photoUrl;
+
+  AppUser({
     required this.uid,
-    required this.username,
-    required this.bornDate,
-    required this.phone,
-    required this.profileImage,
+    required this.email,
+    this.displayName,
+    this.photoUrl,
   });
 
-  // De Firestore a objeto
-  factory UserModel.fromMap(Map<String, dynamic> map, String documentId) {
-    return UserModel(
-      uid: documentId,
-      username: map['username'] ?? '',
-      bornDate: map['bornDate'] ?? '',
-      phone: map['phone'] ?? '',
-      profileImage: map['profileImage'] ?? '',
+  factory AppUser.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return AppUser(
+      uid: doc.id,
+      email: data['email'] ?? '',
+      displayName: data['displayName'],
+      photoUrl: data['photoUrl'],
     );
   }
 
-  // De objeto a Firestore
   Map<String, dynamic> toMap() {
     return {
-      'username': username,
-      'bornDate': bornDate,
-      'phone': phone,
-      'profileImage': profileImage,
+      'email': email,
+      'displayName': displayName,
+      'photoUrl': photoUrl,
     };
   }
 }
