@@ -1,0 +1,2 @@
+C:/Users/sergi/AndroidStudioProjects/EduConnect/android/app/.cxx/Debug/6m1v3f2q/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/sergi/AndroidStudioProjects/EduConnect/android/app/.cxx/Debug/6m1v3f2q/armeabi-v7a/CMakeFiles/rebuild_cache.dir
