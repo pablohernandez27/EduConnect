@@ -81,7 +81,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Enviar correo de verificación
       await firebaseUser.sendEmailVerification();
-
       // Cerrar sesión para forzar verificación antes de login
       await FirebaseAuth.instance.signOut();
 
