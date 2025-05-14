@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/firestore_service.dart';
 import '../models/tarea.dart';
-import 'CreateTaskScreen.dart';
+import 'create_task_screen.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({super.key});
