@@ -4,12 +4,14 @@ class AppUser {
   final String uid;
   final String email;
   final String? displayName;
+  final String? phoneNumber;
   final String? photoUrl;
 
   AppUser({
     required this.uid,
     required this.email,
     this.displayName,
+    this.phoneNumber,
     this.photoUrl,
   });
 
@@ -19,6 +21,7 @@ class AppUser {
       uid: doc.id,
       email: data['email'] ?? '',
       displayName: data['displayName'],
+      phoneNumber: data['phoneNumber'],
       photoUrl: data['photoUrl'],
     );
   }
@@ -27,6 +30,7 @@ class AppUser {
     return {
       'email': email,
       'displayName': displayName,
+      'phoneNumber': phoneNumber,
       'photoUrl': photoUrl,
     };
   }
