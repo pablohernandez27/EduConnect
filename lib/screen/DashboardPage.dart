@@ -1,19 +1,21 @@
+import 'package:educonnect/screen/chat_list_screen.dart';
+import 'package:educonnect/screen/create_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'BottomNavbar.dart';
-import 'ChatsScreen.dart';
-import 'FavoriteScreen.dart';
-import 'TaskScreen.dart';
+import 'chat_screen.dart';
+import 'favorite_screen.dart';
+import 'task_screen.dart';
 import 'home_screen.dart';
 
 class DashboardPage extends StatefulWidget {
   int currentTab;
   int? indexSelectTab;
   Widget currentPage = HomeScreen();
-
+  String? idCurrentUser = FirebaseAuth.instance.currentUser?.uid;
   DashboardPage({super.key, required this.currentTab, this.indexSelectTab});
 
   @override
@@ -23,8 +25,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with TickerProviderStateMixin {
   late TabController tabController;
-  User? user;
-
 
   @override
   void initState() {
@@ -34,7 +34,6 @@ class _DashboardPageState extends State<DashboardPage>
       vsync: this,
       initialIndex: widget.indexSelectTab ?? widget.currentTab,
     );
-    user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -73,7 +72,7 @@ class _DashboardPageState extends State<DashboardPage>
                       color: Theme.of(context).primaryColor,
                     ),
                     child: Text(
-                      user?.email ?? 'Nombre de usuario',
+                      'Menú',
                       style: TextStyle(color: Colors.white, fontSize: 24),
                     ),
                   ),
@@ -142,8 +141,8 @@ class _DashboardPageState extends State<DashboardPage>
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   HomeScreen(),
+                  ChatListScreen(),
                   FavoriteScreen(),
-                  ChatsScreen(),
                   TaskScreen(),
                 ],
               ),
