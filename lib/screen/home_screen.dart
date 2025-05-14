@@ -53,13 +53,27 @@ class HomeScreen extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ForoScreen(foro: foro)),
-                    );
-                  },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            foro.isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: foro.isFavorite ? Colors.red : Colors.grey,
+                          ),
+                          onPressed: () {
+                            _firestoreService.toggleFavorite(foro);
+                          },
+                        ),
+                        Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => ForoScreen(foro: foro)),
+                      );
+                    }
                 ),
               );
             },
