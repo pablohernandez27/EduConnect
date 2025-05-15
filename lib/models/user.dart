@@ -5,14 +5,14 @@ class AppUser {
   final String email;
   final String? displayName;
   final String? phoneNumber;
-  final String? photoUrl;
+  final String? photoBase64;
 
   AppUser({
     required this.uid,
     required this.email,
     this.displayName,
     this.phoneNumber,
-    this.photoUrl,
+    this.photoBase64,
   });
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
@@ -22,7 +22,7 @@ class AppUser {
       email: data['email'] ?? '',
       displayName: data['displayName'],
       phoneNumber: data['phoneNumber'],
-      photoUrl: data['photoUrl'],
+      photoBase64: data['photoBase64'],
     );
   }
 
@@ -31,20 +31,20 @@ class AppUser {
       'email': email,
       'displayName': displayName,
       'phoneNumber': phoneNumber,
-      'photoUrl': photoUrl,
+      'photoBase64': photoBase64,
     };
   }
   AppUser copyWith({
     String? displayName,
     String? phoneNumber,
-    String? photoUrl,
+    String? photoBase64,
   }) {
     return AppUser(
       uid: uid,
       email: email,
       displayName: displayName ?? this.displayName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      photoUrl: photoUrl ?? this.photoUrl,
+      photoBase64: photoBase64 ?? this.photoBase64,
     );
   }
 

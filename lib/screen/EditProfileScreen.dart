@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -73,40 +74,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 30);
 
     if (pickedFile != null) {
+      final bytes = await File(pickedFile.path).readAsBytes();
+      final base64Image = base64Encode(bytes);
+
       final uid = FirebaseAuth.instance.currentUser!.uid;
-      final ref = FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
 
       try {
-        // Subir archivo
-        await ref.putFile(File(pickedFile.path));
-
-        // Obtener URL
-        final url = await ref.getDownloadURL();
-
-        // Guardar en Firestore
         await FirebaseFirestore.instance.collection('users').doc(uid).update({
-          'photoUrl': url,
+          'photoBase64': base64Image,
         });
 
-        // Actualizar estado local
         setState(() {
-          _user = _user?.copyWith(photoUrl: url);
+          _user = _user?.copyWith(photoBase64: base64Image);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Foto de perfil actualizada')),
         );
       } catch (e) {
-        print('Error al subir imagen: $e');
+        print('Error al guardar imagen en Firestore: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al subir la imagen')),
+          SnackBar(content: Text('Error al guardar la imagen')),
         );
       }
     }
   }
+
 
 
   Future<void> _requestPermission(Permission permission) async {
@@ -167,13 +163,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundImage: _user?.photoUrl != null
-                          ? NetworkImage(_user!.photoUrl!)
+                      backgroundImage: _user?.photoBase64 != null
+                          ? MemoryImage(base64Decode(_user!.photoBase64!))
                           : null,
-                      child: _user?.photoUrl == null
+                      child: _user?.photoBase64 == null
                           ? Icon(Icons.person, size: 50)
                           : null,
                     ),
+
                     Positioned(
                       bottom: 0,
                       right: 0,

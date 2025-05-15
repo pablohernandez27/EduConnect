@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educonnect/screen/chat_list_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,6 +55,7 @@ class _DashboardPageState extends State<DashboardPage>
         child: MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.05),
           child: Scaffold(
+            resizeToAvoidBottomInset: false,
             appBar: AppBar(
               backgroundColor: Theme.of(context).primaryColor,
               elevation: 0,
@@ -80,12 +83,12 @@ class _DashboardPageState extends State<DashboardPage>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CircleAvatar(
-                                backgroundImage: user.photoUrl != null
-                                    ? NetworkImage(user.photoUrl!)
+                                radius: 35,
+                                backgroundImage: user.photoBase64 != null
+                                    ? MemoryImage(base64Decode(user.photoBase64!))
                                     : null,
-                                radius: 30,
-                                child: user.photoUrl == null
-                                    ? Icon(Icons.person, size: 30, color: Colors.white)
+                                child: user.photoBase64 == null
+                                    ? Icon(Icons.person, size: 50)
                                     : null,
                               ),
                               SizedBox(height: 10),
