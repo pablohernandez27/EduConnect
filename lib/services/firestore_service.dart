@@ -43,6 +43,17 @@ class FirestoreService {
         .doc(foro.id)
         .update({'isFavorite': !foro.isFavorite});
   }
+  Future<void> deleteForo(String foroId) async {
+    await FirebaseFirestore.instance.collection('foros').doc(foroId).delete();
+  }
+  Future<void> deletePost(String foroId, String postId) async {
+    await FirebaseFirestore.instance
+        .collection('foros')
+        .doc(foroId)
+        .collection('posts')
+        .doc(postId)
+        .delete();
+  }
 
 
 }
