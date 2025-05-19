@@ -75,7 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'email': firebaseUser.email,
         'displayName': displayName,
         'photoUrl': null,
-        'phoneNumber': null,
+        'photoBase64': null,
       });
 
 
