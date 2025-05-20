@@ -33,16 +33,27 @@ dependencies:
     sdk: flutter
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
-  cloud_firestore: ^5.6.6
   firebase_storage: ^12.4.5
+  cloud_firestore: ^5.6.6
+  intl: ^0.20.2
+  image_picker: ^1.0.8
+  permission_handler: ^11.3.1
+  device_info_plus: ^9.1.2
+  flutter_launcher_icons: ^0.14.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
+
+
+
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -55,6 +66,7 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+
 # The following section is specific to Flutter packages.
 flutter:
   assets:
@@ -64,6 +76,23 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo_educonnect.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/logo_educonnect.png
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
+  fullscreen: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -95,3 +124,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
