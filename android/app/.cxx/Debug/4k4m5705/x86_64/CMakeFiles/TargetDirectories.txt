@@ -1,0 +1,2 @@
+C:/Users/Pablo/StudioProjects/EduConnect/android/app/.cxx/Debug/4k4m5705/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Pablo/StudioProjects/EduConnect/android/app/.cxx/Debug/4k4m5705/x86_64/CMakeFiles/rebuild_cache.dir
