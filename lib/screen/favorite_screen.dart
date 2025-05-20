@@ -22,7 +22,7 @@ class FavoriteScreen extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
             itemCount: foros.length,
             itemBuilder: (context, index) {
               final foro = foros[index];
