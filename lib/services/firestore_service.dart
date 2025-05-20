@@ -3,6 +3,8 @@ import '../models/foro.dart';
 import '../models/post.dart';
 import '../models/tarea.dart';
 
+enum TaskSortOrder { createdAtDesc, fechaEntregaAsc, fechaEntregaDesc, tituloAsc }
+
 class FirestoreService {
   final _db = FirebaseFirestore.instance;
 
@@ -55,15 +57,37 @@ class FirestoreService {
         .delete();
   }
 
-  Stream<List<Tarea>> getTareas(String userId) {
-    return _db
+  Stream<List<Tarea>> getTareas(String userId, {TaskSortOrder sortOrder = TaskSortOrder.createdAtDesc}) {
+    Query query = _db
         .collection('tareas')
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true) 
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-        .map((doc) => Tarea.fromMap(doc.id, doc.data()))
-        .toList());
+        .where('userId', isEqualTo: userId);
+
+    switch (sortOrder) {
+      case TaskSortOrder.fechaEntregaAsc:
+        query = query.orderBy('tieneFechaEntrega', descending: true);
+        query = query.orderBy('fechaEntrega', descending: false);
+        query = query.orderBy('createdAt', descending: true);
+        break;
+      case TaskSortOrder.fechaEntregaDesc:
+        query = query.orderBy('tieneFechaEntrega', descending: true);
+        query = query.orderBy('fechaEntrega', descending: true);
+        query = query.orderBy('createdAt', descending: true);
+        break;
+      case TaskSortOrder.tituloAsc:
+        query = query.orderBy('titulo', descending: false);
+        break;
+      case TaskSortOrder.createdAtDesc:
+      default:
+        query = query.orderBy('createdAt', descending: true);
+        break;
+    }
+
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.where((doc) => doc.data() != null).map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Tarea.fromMap(doc.id, data);
+      }).toList();
+    });
   }
 
   Future<void> createTarea({
@@ -79,6 +103,7 @@ class FirestoreService {
       'completada': false,
       'userId': userId,
       'createdAt': FieldValue.serverTimestamp(),
+      'tieneFechaEntrega': fechaEntrega != null,
     });
   }
 
@@ -100,6 +125,7 @@ class FirestoreService {
       'descripcion': descripcion,
       'fechaEntrega': fechaEntrega != null ? Timestamp.fromDate(fechaEntrega) : null,
       'completada': completada,
+      'tieneFechaEntrega': fechaEntrega != null,
     });
   }
 
