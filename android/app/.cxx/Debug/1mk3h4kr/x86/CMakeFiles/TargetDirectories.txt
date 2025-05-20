@@ -1,0 +1,2 @@
+C:/Users/displaynote/AndroidStudioProjects/EduConnect/android/app/.cxx/Debug/1mk3h4kr/x86/CMakeFiles/edit_cache.dir
+C:/Users/displaynote/AndroidStudioProjects/EduConnect/android/app/.cxx/Debug/1mk3h4kr/x86/CMakeFiles/rebuild_cache.dir
