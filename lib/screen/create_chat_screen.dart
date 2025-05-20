@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educonnect/screen/chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'chat_screen.dart';
 
 class CreateChat extends StatefulWidget {
   @override
@@ -90,7 +91,7 @@ class _CreateChatState extends State<CreateChat> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
-              // Search field
+              // Campo de búsqueda
               TextField(
                 controller: _searchController,
                 onChanged: _searchUsers,
@@ -102,24 +103,43 @@ class _CreateChatState extends State<CreateChat> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                  contentPadding:
+                  const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Results list
+              // Lista de resultados
               Expanded(
                 child: _searchResults.isEmpty
                     ? Center(
                   child: Text(
                     'No hay resultados',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: onSurface.withOpacity(0.6)),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: onSurface.withOpacity(0.6)),
                   ),
                 )
                     : ListView.builder(
                   itemCount: _searchResults.length,
                   itemBuilder: (context, index) {
                     final user = _searchResults[index];
+                    final email = user['email'] as String? ?? '';
+                    final username = (user['displayName'] as String?)?.trim();
+                    final displayName =
+                    (username?.isNotEmpty == true) ? username! : null;
+
+                    // Procesamos foto Base64
+                    final photoBase64 = user['photoBase64'] as String?;
+                    ImageProvider? avatarImage;
+                    if (photoBase64 != null && photoBase64.isNotEmpty) {
+                      try {
+                        avatarImage =
+                            MemoryImage(base64Decode(photoBase64));
+                      } catch (_) {
+                        avatarImage = null;
+                      }
+                    }
+
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       shape: RoundedRectangleBorder(
@@ -127,9 +147,30 @@ class _CreateChatState extends State<CreateChat> {
                       ),
                       elevation: 1,
                       child: ListTile(
-                        title: Text(user['email'] ?? ''),
-                        trailing: Icon(Icons.chat_bubble_outline, color: primary),
-                        onTap: () => _createChatOrOpen(user['uid'], user['email']),
+                        leading: CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: avatarImage,
+                          child: avatarImage == null
+                              ? Text(
+                            (displayName ?? email)[0].toUpperCase(),
+                            style: TextStyle(
+                              color: primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          )
+                              : null,
+                        ),
+                        title: Text(
+                          displayName ?? email,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        // Si hay displayName, mostramos email como subtítulo
+                        subtitle: displayName != null
+                            ? Text(email, style: TextStyle(color: onSurface.withOpacity(0.8)))
+                            : null,
+                        onTap: () => _createChatOrOpen(user['uid'], email),
                       ),
                     );
                   },
