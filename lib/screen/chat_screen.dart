@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -17,9 +18,15 @@ class ChatScreen extends StatefulWidget {
   _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  // 1) Método para obtener datos de usuario
+  Future<Map<String, dynamic>?> _getUserData(String userId) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    return doc.exists ? doc.data() : null;
+  }
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
@@ -116,123 +123,167 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Chat")),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('chats')
-                  .doc(widget.chatId)
-                  .collection('messages')
-                  .orderBy('timestamp')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: _getUserData(widget.receiverId),
+      builder: (context, userSnapshot) {
+        String? displayName;
+        String? email;
+        if (userSnapshot.connectionState == ConnectionState.done && userSnapshot.hasData) {
+          final data = userSnapshot.data!;
+          displayName = (data['displayName']?.toString().isNotEmpty == true)
+              ? data['displayName'] as String
+              : null;
+          email = data['email'] as String?;
+        }
 
-                final messages = snapshot.data!.docs;
+        return Scaffold(
+          appBar: AppBar(
+            title: displayName != null
+            // Si hay usuario, lo mostramos normal
+                ? Text(displayName)
+            // Si no, mostramos email con fontSize menor
+                : Text(
+              email ?? 'Chat',
+              style: const TextStyle(fontSize: 16),
+            ),
+            centerTitle: true,
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('chats')
+                      .doc(widget.chatId)
+                      .collection('messages')
+                      .orderBy('timestamp')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final messages = snapshot.data!.docs;
+                    WidgetsBinding.instance
+                        .addPostFrameCallback((_) => _scrollToBottom());
 
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = messages[index];
+                        final isMe = msg['senderId'] ==
+                            FirebaseAuth.instance.currentUser!.uid;
+                        final isDeleted = msg['deleted'] as bool;
+                        final messageText = msg['text'] ?? '';
+                        final timestamp = msg['timestamp'] != null
+                            ? DateFormat('dd/MM/yyyy HH:mm')
+                            .format((msg['timestamp'] as Timestamp).toDate())
+                            : '';
 
-                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
-                    final isMe = msg['senderId'] == FirebaseAuth.instance.currentUser!.uid;
-                    final isDeleted = msg['deleted'];
-                    final messageText = msg['text'] ?? '';
-                    final timestamp = msg['timestamp'] != null
-                        ? DateFormat('dd/MM/yyyy HH:mm').format((msg['timestamp'] as Timestamp).toDate())
-                        : '';
-
-                    return GestureDetector(
-                      onLongPress: () {
-                        if (isMe && msg['deleted'] == false) {
-                          _mostrarDialogoBorrar(context, msg.id);
-                        } else if (isMe && msg['deleted'] == true) {
-                          _mostrarDialogoBorrado(context);
-                        }
-                      },
-                      child: Align(
-                        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isMe ? Colors.green[100] : Colors.grey[300],
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
-                              bottomLeft: isMe ? Radius.circular(16) : Radius.circular(0),
-                              bottomRight: isMe ? Radius.circular(0) : Radius.circular(16),
+                        return GestureDetector(
+                          onLongPress: () {
+                            if (isMe && !isDeleted) {
+                              _mostrarDialogoBorrar(context, msg.id);
+                            } else if (isMe && isDeleted) {
+                              _mostrarDialogoBorrado(context);
+                            }
+                          },
+                          child: Align(
+                            alignment: isMe
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isMe
+                                    ? Colors.green[100]
+                                    : Colors.grey[300],
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(16),
+                                  topRight: const Radius.circular(16),
+                                  bottomLeft: isMe
+                                      ? const Radius.circular(16)
+                                      : Radius.zero,
+                                  bottomRight: isMe
+                                      ? Radius.zero
+                                      : const Radius.circular(16),
+                                ),
+                              ),
+                              constraints: BoxConstraints(
+                                  maxWidth:
+                                  MediaQuery.of(context).size.width * 0.7),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    messageText,
+                                    style: isDeleted
+                                        ? const TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic)
+                                        : const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    timestamp,
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey[600]),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                messageText,
-                                style: isDeleted
-                                    ? TextStyle(fontSize: 14, fontStyle: FontStyle.italic)
-                                    : TextStyle(fontSize: 16),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                timestamp,
-                                style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                                textAlign: TextAlign.right,
-                              ),
-                            ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          decoration: const InputDecoration(
+                            hintText: "Escribe un mensaje...",
+                            border: InputBorder.none,
                           ),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(24),
                     ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: "Escribe un mensaje...",
-                        border: InputBorder.none,
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.send, color: Colors.white),
+                        onPressed: _sendMessage,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }

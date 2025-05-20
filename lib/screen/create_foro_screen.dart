@@ -9,34 +9,85 @@ class CreateForoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Crear Foro')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: const Text('Nuevo Foro'),
+        centerTitle: true,
+        backgroundColor: primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(controller: _titleController, decoration: InputDecoration(labelText: 'Título')),
-            SizedBox(height: 10,),
-            TextField(controller: _descController, decoration: InputDecoration(labelText: 'Descripción')),
-            SizedBox(height: 20),
-            ElevatedButton(
+            Text(
+              'Crear un nuevo foro',
+              style: theme.textTheme.headlineSmall?.copyWith(),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: 'Título',
+                prefixIcon: Icon(Icons.title),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            TextField(
+              controller: _descController,
+              maxLines: 5,
+              decoration: InputDecoration(
+                labelText: 'Descripción',
+                prefixIcon: Icon(Icons.description),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignLabelWithHint: true,
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            ElevatedButton.icon(
               onPressed: () {
-                //Verificar que se ha introducido el título y la descripción
-                if(_titleController.text.isEmpty || _descController.text.isEmpty){
+                if (_titleController.text.isEmpty || _descController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Título y descripción son requeridos'))
+                    const SnackBar(content: Text('Título y descripción son requeridos')),
                   );
-                }else{
-                  final userId = FirebaseAuth.instance.currentUser?.email; // De tu Auth
+                } else {
+                  final userId = FirebaseAuth.instance.currentUser?.email ?? 'Anónimo';
                   _firestoreService.createForo(
                     _titleController.text,
                     _descController.text,
-                    userId.toString(),
+                    userId,
                   );
                   Navigator.pop(context);
                 }
               },
-              child: Text('Crear'),
+              icon: const Icon(Icons.forum),
+              label: const Text('Crear Foro', style: TextStyle(fontSize: 16)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 3,
+              ),
             ),
           ],
         ),

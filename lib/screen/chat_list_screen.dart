@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educonnect/screen/create_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,11 +29,15 @@ class ChatListScreen extends StatelessWidget {
         title: const Text("Tus Chats"),
         actions: [
           IconButton(
-              onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateChat()));
-              },
-              icon: Icon(Icons.chat))
-        ]
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateChat()),
+              );
+            },
+            icon: const Icon(Icons.chat),
+          )
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: chatsRef.orderBy('createdAt', descending: true).snapshots(),
@@ -63,28 +68,53 @@ class ChatListScreen extends StatelessWidget {
                   }
 
                   final userData = userSnapshot.data!;
-                  final userEmail = userData['email'] ?? 'Usuario desconocido';
+                  // Mostrar username si existe, sino email
+                  final displayName = userData['displayName']?.toString().isNotEmpty == true
+                      ? userData['displayName'] as String
+                      : userData['email'] as String? ?? 'Usuario desconocido';
+
+                  // Procesar foto Base64
+                  final photoBase64 = userData['photoBase64'] as String?;
+                  ImageProvider? avatarImage;
+                  if (photoBase64 != null && photoBase64.isNotEmpty) {
+                    try {
+                      avatarImage = MemoryImage(base64Decode(photoBase64));
+                    } catch (e) {
+                      avatarImage = null;
+                    }
+                  }
 
                   return Card(
                     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       leading: CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Text(
-                          userEmail[0].toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+                        radius: 24,
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: avatarImage,
+                        child: avatarImage == null
+                            ? Text(
+                          displayName[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.blueAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        )
+                            : null,
                       ),
                       title: Text(
-                        userEmail,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        displayName,
+                        style:
+                        const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       subtitle: const Text("Toca para continuar el chat"),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-
+                      trailing: const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.grey),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -98,7 +128,6 @@ class ChatListScreen extends StatelessWidget {
                       },
                     ),
                   );
-
                 },
               );
             },
