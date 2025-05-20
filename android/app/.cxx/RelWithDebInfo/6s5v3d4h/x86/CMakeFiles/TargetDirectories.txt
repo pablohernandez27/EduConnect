@@ -1,0 +1,2 @@
+C:/Users/sergi/AndroidStudioProjects/EduConnect/android/app/.cxx/RelWithDebInfo/6s5v3d4h/x86/CMakeFiles/edit_cache.dir
+C:/Users/sergi/AndroidStudioProjects/EduConnect/android/app/.cxx/RelWithDebInfo/6s5v3d4h/x86/CMakeFiles/rebuild_cache.dir

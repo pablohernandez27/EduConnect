@@ -1,15 +1,19 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educonnect/screen/chat_list_screen.dart';
-import 'package:educonnect/screen/create_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
+import '../models/user.dart';
 import 'BottomNavbar.dart';
+import 'EditProfileScreen.dart';
 import 'chat_screen.dart';
 import 'favorite_screen.dart';
 import 'task_screen.dart';
 import 'home_screen.dart';
+import '../services/firestore_service.dart';
 
 class DashboardPage extends StatefulWidget {
   int currentTab;
@@ -51,15 +55,16 @@ class _DashboardPageState extends State<DashboardPage>
         child: MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.05),
           child: Scaffold(
+            resizeToAvoidBottomInset: false,
             appBar: AppBar(
               backgroundColor: Theme.of(context).primaryColor,
               elevation: 0,
               leading: Builder(
                 builder:
                     (context) => IconButton(
-                      icon: Icon(Icons.menu, color: Colors.white),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                    ),
+                  icon: Icon(Icons.menu, color: Colors.white),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
               ),
               title: Text('EduConnect', style: TextStyle(color: Colors.white)),
             ),
@@ -68,19 +73,80 @@ class _DashboardPageState extends State<DashboardPage>
                 padding: EdgeInsets.zero,
                 children: [
                   DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    child: Text(
-                      'Menú',
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                    ),
+                      decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+                      child: StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+
+                          final doc = snapshot.data!;
+                          final user = AppUser.fromFirestore(doc);
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 35,
+                                backgroundImage: user.photoBase64 != null
+                                    ? MemoryImage(base64Decode(user.photoBase64!))
+                                    : null,
+                                child: user.photoBase64 == null
+                                    ? Icon(Icons.person, size: 50)
+                                    : null,
+                              ),
+                              SizedBox(height: 10),
+                              Text(user.displayName ?? 'Sin nombre',
+                                  style: TextStyle(color: Colors.white, fontSize: 16)),
+                              Text(user.email,
+                                  style: TextStyle(color: Colors.white70, fontSize: 14)),
+                            ],
+                          );
+                        },
+                      )
+
+
                   ),
-                  ListTile(
+                  ExpansionTile(
                     leading: Icon(Icons.settings),
                     title: Text('Configuración'),
-                    onTap: () => Navigator.pop(context),
+                    children: [
+                      ListTile(
+                        leading: Icon(Icons.person),
+                        title: Text('Editar perfil'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen()));
+                        },
+                      ),
+                      ExpansionTile(
+                        leading: Icon(Icons.lock),
+                        title: Text('Seguridad de la cuenta'),
+                        children: [
+                          ListTile(
+                            leading: Icon(Icons.lock_reset),
+                            title: Text('Restablecer contraseña'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              //Navigator.push(context, MaterialPageRoute(builder: (_) => ResetPasswordScreen()));
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.delete_forever),
+                            title: Text('Eliminar cuenta'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              //Navigator.push(context, MaterialPageRoute(builder: (_) => DeleteAccountScreen()));
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
+
+
                   ListTile(
                     leading: Icon(Icons.logout),
                     title: Text('Cerrar sesión'),
@@ -177,4 +243,12 @@ class _DashboardPageState extends State<DashboardPage>
       ),
     ];
   }
+  Future<AppUser?> getUserFromFirestore(String uid) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (doc.exists) {
+      return AppUser.fromFirestore(doc);
+    }
+    return null;
+  }
+
 }

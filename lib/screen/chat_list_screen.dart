@@ -84,6 +84,7 @@ class ChatListScreen extends StatelessWidget {
                       ),
                       subtitle: const Text("Toca para continuar el chat"),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+
                       onTap: () {
                         Navigator.push(
                           context,
