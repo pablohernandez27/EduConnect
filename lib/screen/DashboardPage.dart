@@ -74,11 +74,17 @@ class _DashboardPageState extends State<DashboardPage>
                 children: [
                   DrawerHeader(
                       decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-                      child: FutureBuilder<AppUser?>(
-                        future: getUserFromFirestore(FirebaseAuth.instance.currentUser!.uid),
+                      child: StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .snapshots(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-                          final user = snapshot.data!;
+
+                          final doc = snapshot.data!;
+                          final user = AppUser.fromFirestore(doc);
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -100,6 +106,7 @@ class _DashboardPageState extends State<DashboardPage>
                           );
                         },
                       )
+
 
                   ),
                   ExpansionTile(
