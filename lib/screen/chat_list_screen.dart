@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educonnect/screen/create_chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +9,10 @@ class ChatListScreen extends StatelessWidget {
   const ChatListScreen({super.key});
 
   Future<Map<String, dynamic>?> _getUserData(String userId) async {
-    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
     return doc.exists ? doc.data() : null;
   }
 
@@ -28,77 +32,107 @@ class ChatListScreen extends StatelessWidget {
         title: const Text("Tus Chats"),
         actions: [
           IconButton(
-              onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateChat()));
-              },
-              icon: Icon(Icons.chat))
-        ]
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => CreateChat()),
+            ),
+            icon: const Icon(Icons.chat),
+          )
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: chatsRef.orderBy('createdAt', descending: true).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          if (!snap.hasData || snap.data!.docs.isEmpty) {
             return const Center(child: Text("No tienes chats todavía"));
           }
 
-          final chatDocs = snapshot.data!.docs;
-
+          final chatDocs = snap.data!.docs;
           return ListView.builder(
+            padding: const EdgeInsets.only(bottom: 80),
             itemCount: chatDocs.length,
-            itemBuilder: (context, index) {
-              final chatDoc = chatDocs[index];
-              final chatId = chatDoc.id;
-              final users = List<String>.from(chatDoc['users']);
-              final otherUserId = users.firstWhere((uid) => uid != currentUser.uid);
+            itemBuilder: (context, i) {
+              final chat = chatDocs[i];
+              final otherUid = (chat['users'] as List)
+                  .cast<String>()
+                  .firstWhere((u) => u != currentUser.uid);
 
               return FutureBuilder<Map<String, dynamic>?>(
-                future: _getUserData(otherUserId),
-                builder: (context, userSnapshot) {
-                  if (!userSnapshot.hasData) {
+                future: _getUserData(otherUid),
+                builder: (context, usnap) {
+                  if (!usnap.hasData) {
                     return const ListTile(title: Text("Cargando..."));
                   }
+                  final data = usnap.data!;
+                  final email = data['email'] as String? ?? 'Usuario desconocido';
+                  final dn = (data['displayName'] as String?)?.trim();
+                  final hasName = dn != null && dn.isNotEmpty;
+                  final titleText = hasName ? dn : email;
 
-                  final userData = userSnapshot.data!;
-                  final userEmail = userData['email'] ?? 'Usuario desconocido';
+                  // Foto Base64
+                  ImageProvider? avatarImage;
+                  final b64 = data['photoBase64'] as String?;
+                  if (b64 != null && b64.isNotEmpty) {
+                    try {
+                      avatarImage = MemoryImage(base64Decode(b64));
+                    } catch (_) {
+                      avatarImage = null;
+                    }
+                  }
 
                   return Card(
                     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8
+                      ),
                       leading: CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Text(
-                          userEmail[0].toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+                        radius: 24,
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: avatarImage,
+                        child: avatarImage == null
+                            ? Icon(
+                          Icons.person,
+                          size: 28,
+                          color: Colors.grey.shade600,
+                        )
+                            : null,
                       ),
                       title: Text(
-                        userEmail,
+                        titleText,
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      subtitle: const Text("Toca para continuar el chat"),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-
+                      subtitle: hasName
+                          ? Text(
+                        email,
+                        style: TextStyle(color: Colors.grey.shade600),
+                      )
+                          : null,
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => ChatScreen(
-                              chatId: chatId,
-                              receiverId: otherUserId,
+                              chatId: chat.id,
+                              receiverId: otherUid,
                             ),
                           ),
                         );
                       },
                     ),
                   );
-
                 },
               );
             },

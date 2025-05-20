@@ -31,7 +31,7 @@ class HomeScreen extends StatelessWidget {
           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
           final foros = snapshot.data!;
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
             itemCount: foros.length,
             itemBuilder: (context, index) {
               final foro = foros[index];
