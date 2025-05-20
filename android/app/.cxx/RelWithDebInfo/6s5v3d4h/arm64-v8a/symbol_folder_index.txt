@@ -1,0 +1,1 @@
+C:\Users\sergi\AndroidStudioProjects\EduConnect\build\app\intermediates\cxx\RelWithDebInfo\6s5v3d4h\obj\arm64-v8a

@@ -50,11 +50,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBF8SfI7vkeCn9Y3Grv_VgVofxPvsfx01M',
-    appId: '1:281185233983:android:5e7b66c0b48fbe4b2f1c8a',
-    messagingSenderId: '281185233983',
-    projectId: 'educonnect-63cec',
-    storageBucket: 'educonnect-63cec.firebasestorage.app',
+    apiKey: 'AIzaSyBXh8YbPrXgm7svSV1MSl836_W77_rRNc0',
+    appId: '1:818027477354:android:01d3d44aa4cc051b170d13',
+    messagingSenderId: '818027477354',
+    projectId: 'educonnect-d07df',
+    storageBucket: 'educonnect-d07df.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
