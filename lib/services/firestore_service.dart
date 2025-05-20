@@ -37,6 +37,24 @@ class FirestoreService {
     });
   }
 
+  Future<void> toggleFavorite(Foro foro) async {
+    await FirebaseFirestore.instance
+        .collection('foros')
+        .doc(foro.id)
+        .update({'isFavorite': !foro.isFavorite});
+  }
+  Future<void> deleteForo(String foroId) async {
+    await FirebaseFirestore.instance.collection('foros').doc(foroId).delete();
+  }
+  Future<void> deletePost(String foroId, String postId) async {
+    await FirebaseFirestore.instance
+        .collection('foros')
+        .doc(foroId)
+        .collection('posts')
+        .doc(postId)
+        .delete();
+  }
+
   Stream<List<Tarea>> getTareas(String userId) {
     return _db
         .collection('tareas')
