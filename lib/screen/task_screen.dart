@@ -20,6 +20,8 @@ class _TaskScreenState extends State<TaskScreen> {
 
   TaskFilterState _currentFilter = TaskFilterState.pendientes;
 
+  TaskSortOrder _currentSortOrder = TaskSortOrder.createdAtDesc;
+
   void _navigateToCreateTaskScreen({Tarea? tarea}) async {
     await Navigator.push(
       context,
@@ -145,30 +147,66 @@ class _TaskScreenState extends State<TaskScreen> {
       appBar: AppBar(
         title: const Text('Mis Tareas'),
         actions: [
-          PopupMenuButton<TaskFilterState>(
-            icon: const Icon(Icons.filter_list),
-            tooltip: "Filtrar tareas",
-            initialValue: _currentFilter,
-            onSelected: (TaskFilterState result) {
+          PopupMenuButton<dynamic>(
+            icon: const Icon(Icons.sort),
+            tooltip: "Filtrar u Ordenar tareas",
+            onSelected: (value) {
               setState(() {
-                _currentFilter = result;
+                if (value is TaskFilterState) {
+                  _currentFilter = value;
+                } else if (value is TaskSortOrder) {
+                  _currentSortOrder = value;
+                }
               });
             },
-            itemBuilder:
-                (BuildContext context) => <PopupMenuEntry<TaskFilterState>>[
-                  const PopupMenuItem<TaskFilterState>(
-                    value: TaskFilterState.pendientes,
-                    child: Text('Pendientes'),
-                  ),
-                  const PopupMenuItem<TaskFilterState>(
-                    value: TaskFilterState.completadas,
-                    child: Text('Completadas'),
-                  ),
-                  const PopupMenuItem<TaskFilterState>(
-                    value: TaskFilterState.todas,
-                    child: Text('Todas'),
-                  ),
-                ],
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
+              // --- Sección de Filtro ---
+              PopupMenuItem<dynamic>(
+                enabled: false,
+                child: Text('Filtrar por:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[700])),
+              ),
+              PopupMenuItem<TaskFilterState>(
+                value: TaskFilterState.pendientes,
+                enabled: _currentFilter != TaskFilterState.pendientes,
+                child: Text('Pendientes', style: _currentFilter == TaskFilterState.pendientes ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              PopupMenuItem<TaskFilterState>(
+                value: TaskFilterState.completadas,
+                enabled: _currentFilter != TaskFilterState.completadas,
+                child: Text('Completadas', style: _currentFilter == TaskFilterState.completadas ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              PopupMenuItem<TaskFilterState>(
+                value: TaskFilterState.todas,
+                enabled: _currentFilter != TaskFilterState.todas,
+                child: Text('Todas', style: _currentFilter == TaskFilterState.todas ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              const PopupMenuDivider(),
+              // --- Sección de Orden ---
+              PopupMenuItem<dynamic>(
+                enabled: false,
+                child: Text('Ordenar por:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[700])),
+              ),
+              PopupMenuItem<TaskSortOrder>(
+                value: TaskSortOrder.createdAtDesc,
+                enabled: _currentSortOrder != TaskSortOrder.createdAtDesc,
+                child: Text('Más Recientes', style: _currentSortOrder == TaskSortOrder.createdAtDesc ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              PopupMenuItem<TaskSortOrder>(
+                value: TaskSortOrder.fechaEntregaAsc,
+                enabled: _currentSortOrder != TaskSortOrder.fechaEntregaAsc,
+                child: Text('Fecha Entrega (Próximas)', style: _currentSortOrder == TaskSortOrder.fechaEntregaAsc ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              PopupMenuItem<TaskSortOrder>(
+                value: TaskSortOrder.fechaEntregaDesc,
+                enabled: _currentSortOrder != TaskSortOrder.fechaEntregaDesc,
+                child: Text('Fecha Entrega (Lejanas)', style: _currentSortOrder == TaskSortOrder.fechaEntregaDesc ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+              PopupMenuItem<TaskSortOrder>(
+                value: TaskSortOrder.tituloAsc,
+                enabled: _currentSortOrder != TaskSortOrder.tituloAsc,
+                child: Text('Título (A-Z)', style: _currentSortOrder == TaskSortOrder.tituloAsc ? TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold) : null),
+              ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
@@ -180,7 +218,7 @@ class _TaskScreenState extends State<TaskScreen> {
         ],
       ),
       body: StreamBuilder<List<Tarea>>(
-        stream: _firestoreService.getTareas(_currentUserId!),
+        stream: _firestoreService.getTareas(_currentUserId!, sortOrder: _currentSortOrder),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -294,7 +332,7 @@ class _TaskScreenState extends State<TaskScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
-                            'Entrega: ${DateFormat('dd/MM/yyyy').format(tarea.fechaEntrega!)}',
+                            'Entrega: ${DateFormat('dd/MM/yyyy HH:mm').format(tarea.fechaEntrega!)}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
