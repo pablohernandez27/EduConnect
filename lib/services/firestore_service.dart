@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/foro.dart';
 import '../models/post.dart';
 import '../models/tarea.dart';
@@ -38,13 +39,48 @@ class FirestoreService {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
-
-  Future<void> toggleFavorite(Foro foro) async {
-    await FirebaseFirestore.instance
-        .collection('foros')
-        .doc(foro.id)
-        .update({'isFavorite': !foro.isFavorite});
+  Future<bool> esFavorito(String foroId) async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final doc = await _db.collection('users').doc(userId).collection('favorites').doc(foroId).get();
+    return doc.exists;
   }
+
+  Future<void> toggleFavorite(String foroId) async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final favRef = _db.collection('users').doc(userId).collection('favorites').doc(foroId);
+
+    final exists = await favRef.get().then((doc) => doc.exists);
+
+    if (exists) {
+      await favRef.delete(); // Elimina de favoritos
+    } else {
+      await favRef.set({'addedAt': FieldValue.serverTimestamp()}); // Añade a favoritos
+    }
+  }
+
+  Future<List<String>> getUserFavoriteForoIds() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final snapshot = await _db.collection('users').doc(userId).collection('favorites').get();
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
+  Future<List<Foro>> getForosFavoritosDelUsuario() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+
+    // Obtiene los IDs favoritos
+    final favSnapshot = await _db.collection('users').doc(userId).collection('favorites').get();
+    final favIds = favSnapshot.docs.map((doc) => doc.id).toList();
+
+    if (favIds.isEmpty) return [];
+
+    // Recupera los foros completos
+    final forosSnapshot = await _db.collection('foros').where(FieldPath.documentId, whereIn: favIds).get();
+
+    return forosSnapshot.docs.map((doc) => Foro.fromMap(doc.id, doc.data())).toList();
+  }
+
+
+
   Future<void> deleteForo(String foroId) async {
     await FirebaseFirestore.instance.collection('foros').doc(foroId).delete();
   }

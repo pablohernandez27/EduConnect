@@ -1,28 +1,52 @@
 import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
 import '../models/foro.dart';
+import '../services/firestore_service.dart';
 import 'foro_screen.dart';
 
-class FavoriteScreen extends StatelessWidget {
+class FavoritosPage extends StatefulWidget {
+  @override
+  _FavoritosPageState createState() => _FavoritosPageState();
+}
+
+class _FavoritosPageState extends State<FavoritosPage> {
   final _firestoreService = FirestoreService();
+  late Future<List<Foro>> _favoritosFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoritos();
+  }
+
+  void _loadFavoritos() {
+    _favoritosFuture = _firestoreService.getForosFavoritosDelUsuario();
+  }
+
+  Future<void> _toggleFavorite(Foro foro) async {
+    await _firestoreService.toggleFavorite(foro.id);
+    setState(() {
+      // Para forzar recarga de favoritos
+      _loadFavoritos();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Favoritos')),
-      body: StreamBuilder<List<Foro>>(
-        stream: _firestoreService.getForos(),
+      body: FutureBuilder<List<Foro>>(
+        future: _favoritosFuture,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Center(child: CircularProgressIndicator());
 
-          final foros = snapshot.data!.where((foro) => foro.isFavorite).toList();
+          if (!snapshot.hasData || snapshot.data!.isEmpty)
+            return Center(child: Text('No tienes foros favoritos aún.'));
 
-          if (foros.isEmpty) {
-            return Center(child: Text('No hay foros marcados como favoritos.'));
-          }
+          final foros = snapshot.data!;
 
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
+            padding: const EdgeInsets.all(12),
             itemCount: foros.length,
             itemBuilder: (context, index) {
               final foro = foros[index];
@@ -48,24 +72,16 @@ class FavoriteScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          foro.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: foro.isFavorite ? Colors.red : Colors.grey,
-                        ),
-                        onPressed: () {
-                          _firestoreService.toggleFavorite(foro);
-                        },
-                      ),
+                      Icon(Icons.favorite, color: Colors.red),
+                      SizedBox(width: 8),
                       Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ForoScreen(foro: foro)),
-                    );
-                  }
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ForoScreen(foro: foro),
+                    ));
+                  },
                 ),
               );
             },
