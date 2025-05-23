@@ -208,7 +208,7 @@ class _DashboardPageState extends State<DashboardPage>
                 children: [
                   HomeScreen(),
                   ChatListScreen(),
-                  FavoriteScreen(),
+                  FavoritosPage(),
                   TaskScreen(),
                 ],
               ),

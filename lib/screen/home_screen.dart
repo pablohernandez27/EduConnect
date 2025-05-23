@@ -5,7 +5,15 @@ import '../models/foro.dart';
 import 'foro_screen.dart';
 import 'create_foro_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   final _firestoreService = FirestoreService();
 
   @override
@@ -36,7 +44,6 @@ class HomeScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final foro = foros[index];
               final currentUser = FirebaseAuth.instance.currentUser;
-
               return Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 3,
@@ -59,13 +66,21 @@ class HomeScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          foro.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: foro.isFavorite ? Colors.red : Colors.grey,
-                        ),
-                        onPressed: () {
-                          _firestoreService.toggleFavorite(foro);
+                      FutureBuilder<bool>(
+                        future: _firestoreService.esFavorito(foro.id),
+                        builder: (context, snapshot) {
+                          final isFavorite = snapshot.data ?? false;
+
+                          return IconButton(
+                            icon: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: () async {
+                              await _firestoreService.toggleFavorite(foro.id);
+                              setState(() {}); // Para que se actualice el ícono
+                            },
+                          );
                         },
                       ),
                       if (foro.createdBy == currentUser?.email)
@@ -105,6 +120,7 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
               );
+
             },
           );
         },
