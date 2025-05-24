@@ -129,16 +129,93 @@ class _DashboardPageState extends State<DashboardPage>
                             leading: Icon(Icons.lock_reset),
                             title: Text('Restablecer contraseña'),
                             onTap: () {
-                              Navigator.pop(context);
-                              //Navigator.push(context, MaterialPageRoute(builder: (_) => ResetPasswordScreen()));
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Confirmar'),
+                                  content: Text('¿Deseas enviar un correo para restablecer tu contraseña?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        final user = FirebaseAuth.instance.currentUser;
+                                        if (user != null && user.email != null) {
+                                          try {
+                                            await FirebaseAuth.instance.sendPasswordResetEmail(email: user.email!);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Correo de restablecimiento enviado a ${user.email}')),
+                                            );
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Error: ${e.toString()}')),
+                                            );
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('No se encontró el correo del usuario.')),
+                                          );
+                                        }
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Enviar'),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.delete_forever),
+                            leading: Icon(Icons.delete_forever, color: Colors.red),
                             title: Text('Eliminar cuenta'),
-                            onTap: () {
+                            onTap: () async {
                               Navigator.pop(context);
-                              //Navigator.push(context, MaterialPageRoute(builder: (_) => DeleteAccountScreen()));
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('¿Eliminar cuenta?'),
+                                  content: Text('Esta acción no se puede deshacer. ¿Estás seguro?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, false),
+                                      child: Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, true),
+                                      child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                try {
+                                  final user = FirebaseAuth.instance.currentUser;
+
+                                  await user?.delete();
+                                  await FirebaseAuth.instance.signOut();
+                                  Navigator.pushReplacementNamed(context, '/login');
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Cuenta eliminada')),
+                                  );
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code == 'requires-recent-login') {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Por seguridad, vuelve a iniciar sesión para eliminar tu cuenta.')),
+                                    );
+
+                                    await FirebaseAuth.instance.signOut();
+                                    Navigator.pushReplacementNamed(context, '/login');
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error al eliminar la cuenta: ${e.message}')),
+                                    );
+                                  }
+                                }
+                              }
                             },
                           ),
                         ],
