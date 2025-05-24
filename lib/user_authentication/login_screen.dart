@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educonnect/screen/DashboardPage.dart';
 import 'package:educonnect/screen/home_screen.dart';
 import 'package:educonnect/main.dart';
 import 'package:educonnect/user_authentication/register_screen.dart';
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
-    final email = _emailController.text.trim();
+    final email = "${_emailController.text.trim()}@alu.murciaeduca.es";
     final password = _passwordController.text.trim();
 
     try {
@@ -42,8 +43,14 @@ class _LoginScreenState extends State<LoginScreen> {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'email': user.email,
-        }, SetOptions(merge: true)); // merge: true evita sobreescribir
+        }, SetOptions(merge: true));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage(currentTab: 0,)),
+        );
+
       }
+
 
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,8 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.email),
-                    labelText: 'Correo electrónico',
+                    prefixIcon: Icon(Icons.school),
+                    labelText: 'Número Regional de estudiante',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
