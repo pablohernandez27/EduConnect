@@ -9,12 +9,29 @@ enum TaskSortOrder { createdAtDesc, fechaEntregaAsc, fechaEntregaDesc, tituloAsc
 class FirestoreService {
   final _db = FirebaseFirestore.instance;
 
-  Stream<List<Foro>> getForos() {
-    return _db.collection('foros').orderBy('createdAt').snapshots().map(
-            (snapshot) => snapshot.docs.map(
-              (doc) => Foro.fromMap(doc.id, doc.data()),
-        ).toList());
+  Stream<List<Foro>> getForos() async* {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      yield [];
+      return;
+    }
+    final userId = user.uid;
+    await for (final snapshot in _db.collection('foros').orderBy('createdAt').snapshots()) {
+      final favSnapshot = await _db
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .get();
+      final favoriteIds = favSnapshot.docs.map((doc) => doc.id).toSet();
+      final foros = snapshot.docs.map((doc) {
+        final foro = Foro.fromMap(doc.id, doc.data());
+        foro.isFavorite = favoriteIds.contains(foro.id);
+        return foro;
+      }).toList();
+      yield foros;
+    }
   }
+
 
   Stream<List<Post>> getPosts(String foroId) {
     return _db.collection('foros').doc(foroId).collection('posts').orderBy('createdAt').snapshots().map(
@@ -84,6 +101,25 @@ class FirestoreService {
   Future<void> deleteForo(String foroId) async {
     await FirebaseFirestore.instance.collection('foros').doc(foroId).delete();
   }
+
+  Stream<List<Foro>> getForosCreadosPorUsuario() {
+    final userId = FirebaseAuth.instance.currentUser!.email;
+
+    return _db
+        .collection('foros')
+        .where('createdBy', isEqualTo: userId)
+        .orderBy('createdAt')
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final favIds = await getUserFavoriteForoIds();
+      return snapshot.docs.map((doc) {
+        final foro = Foro.fromMap(doc.id, doc.data());
+        foro.isFavorite = favIds.contains(foro.id);
+        return foro;
+      }).toList();
+    });
+  }
+
   Future<void> deletePost(String foroId, String postId) async {
     await FirebaseFirestore.instance
         .collection('foros')

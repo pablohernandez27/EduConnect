@@ -4,13 +4,18 @@ Proyecto tfg edu connect 2 DAM
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Ejecutar el Proyecto:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Debes descargar la versión 3.29.2 del SDK de Flutter desde este enlace:
+   👉 https://docs.flutter.dev/release/archive
+2. Prepara tu entorno de desarrollo. En este caso se usa Android Studio, pero también puedes usar Visual Studio Code.
+3. Para instalar Flutter, sigue esta guía:
+   👉 https://docs.flutter.dev/get-started/install
+4. Instala el plugin de Flutter (y Dart) en Android Studio o VSCode.
+5. Si usas Android Studio, asegúrate de configurar la ruta del SDK:
+    * Ve a Ajustes > Language and Frameworks > Flutter
+      → En el campo Flutter SDK Path, selecciona la carpeta donde tienes Flutter.
+    * Luego ve a Language and Frameworks > Dart
+      → En Dart SDK Path, selecciona flutter_sdk/bin/cache/dart-sdk
+6. Si todo está instalado correctamente, abre una terminal en la carpeta raíz del proyecto y ejecuta: 'flutter pub get'
+7. En Android Studio, puedes ejecutar el proyecto haciendo clic en el botón de "Run", o desde la terminal con: 'flutter run'

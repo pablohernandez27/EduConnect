@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'BottomNavbar.dart';
 import 'EditProfileScreen.dart';
+import 'agenda_screen.dart';
 import 'chat_screen.dart';
-import 'favorite_screen.dart';
 import 'task_screen.dart';
 import 'home_screen.dart';
 import '../services/firestore_service.dart';
@@ -194,13 +194,21 @@ class _DashboardPageState extends State<DashboardPage>
                                 try {
                                   final user = FirebaseAuth.instance.currentUser;
 
-                                  await user?.delete();
-                                  await FirebaseAuth.instance.signOut();
-                                  Navigator.pushReplacementNamed(context, '/login');
+                                  if (user != null) {
+                                    // 1. Eliminar datos de Firestore asociados al usuario
+                                    await deleteUserFirestoreData(user.uid);
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Cuenta eliminada')),
-                                  );
+                                    // 2. Eliminar usuario de Firebase Auth
+                                    await user.delete();
+
+                                    // 3. Cerrar sesión y navegar a login
+                                    await FirebaseAuth.instance.signOut();
+                                    Navigator.pushReplacementNamed(context, '/login');
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Cuenta eliminada')),
+                                    );
+                                  }
                                 } on FirebaseAuthException catch (e) {
                                   if (e.code == 'requires-recent-login') {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -285,7 +293,7 @@ class _DashboardPageState extends State<DashboardPage>
                 children: [
                   HomeScreen(),
                   ChatListScreen(),
-                  FavoritosPage(),
+                  AgendaScreen(),
                   TaskScreen(),
                 ],
               ),
@@ -309,8 +317,8 @@ class _DashboardPageState extends State<DashboardPage>
         color: Colors.white,
       ),
       MenuIcon(
-        icon: Icon(Icons.favorite_border),
-        label: Text("Favoritos", style: TextStyle(fontSize: 12)),
+        icon: Icon(Icons.view_agenda),
+        label: Text("Agenda", style: TextStyle(fontSize: 12)),
         color: Colors.white,
       ),
       MenuIcon(
@@ -326,6 +334,29 @@ class _DashboardPageState extends State<DashboardPage>
       return AppUser.fromFirestore(doc);
     }
     return null;
+  }
+  Future<void> deleteUserFirestoreData(String uid) async {
+    final firestore = FirebaseFirestore.instance;
+
+    // borrar colección "chats" donde participe el usuario
+    final chatsSnapshot = await firestore
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .get();
+
+    for (var doc in chatsSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    final tareasSnapshot = await firestore
+        .collection('tareas')
+        .where('userId', isEqualTo: uid)
+        .get();
+
+    for (var doc in tareasSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
   }
 
 }

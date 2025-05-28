@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/firestore_service.dart';
 import '../models/tarea.dart';
+import 'DashboardPage.dart';
+import 'agenda_screen.dart';
 import 'create_task_screen.dart';
 
 enum TaskFilterState { todas, pendientes, completadas }
@@ -213,6 +215,18 @@ class _TaskScreenState extends State<TaskScreen> {
             tooltip: 'Nueva Tarea',
             onPressed: () {
               _navigateToCreateTaskScreen();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_month_outlined),
+            tooltip: 'Agenda',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>  DashboardPage(currentTab: 2),
+                ),
+              );
             },
           ),
         ],

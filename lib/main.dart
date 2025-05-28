@@ -4,6 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 import 'screen/home_screen.dart';
 import 'user_authentication/login_screen.dart';
 
@@ -12,6 +16,7 @@ import 'user_authentication/login_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await initializeDateFormatting('es_ES', null);
   // Sólo inicializo con options en Web.
   if (kIsWeb) {
     await Firebase.initializeApp(
@@ -29,6 +34,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: const Locale('es', 'ES'),
+      supportedLocales: const [
+        Locale('es', 'ES'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        SfGlobalLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       title: 'EduConnect',
       theme: ThemeData(
