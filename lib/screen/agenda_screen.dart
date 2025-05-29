@@ -36,40 +36,53 @@ class _AgendaScreenState extends State<AgendaScreen> {
           _tareas = snapshot.data ?? [];
           final citas = _mapTareasToAppointments(_tareas);
 
-          return SfCalendar(
-            view: CalendarView.month,
-            appointmentTimeTextFormat: 'HH:mm',
-            dataSource: TaskDataSource(citas),
-            todayHighlightColor: Theme.of(context).primaryColor,
-            timeSlotViewSettings: TimeSlotViewSettings(
-              timeFormat: 'HH:mm',
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text("Tus tareas", style: TextStyle(fontSize: 20)),
+                ),
+                SizedBox(
+                  height: 600, // o MediaQuery.of(context).size.height
+                  child: SfCalendar(
+                    view: CalendarView.month,
+                    appointmentTimeTextFormat: 'HH:mm',
+                    dataSource: TaskDataSource(citas),
+                    todayHighlightColor: Theme.of(context).primaryColor,
+                    timeSlotViewSettings: TimeSlotViewSettings(
+                      timeFormat: 'HH:mm',
+                    ),
+                    monthViewSettings: const MonthViewSettings(
+                      showAgenda: true,
+                      appointmentDisplayMode:
+                      MonthAppointmentDisplayMode.appointment,
+                    ),
+                    onTap: (calendarTapDetails) {
+                      if (calendarTapDetails.targetElement ==
+                          CalendarElement.appointment) {
+                        final Appointment? apt =
+                            calendarTapDetails.appointments?.first;
+                        if (apt != null) {
+                          final tarea = _tareas.firstWhere(
+                                (t) =>
+                            t.titulo == apt.subject &&
+                                t.fechaEntrega == apt.startTime,
+                          );
+                          if (tarea != null) {
+                            _abrirDetalleTarea(tarea);
+                          }
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-            monthViewSettings: const MonthViewSettings(
-              showAgenda: true,
-              appointmentDisplayMode:
-              MonthAppointmentDisplayMode.appointment,
-            ),
-            onTap: (calendarTapDetails) {
-              if (calendarTapDetails.targetElement ==
-                  CalendarElement.appointment) {
-                final Appointment? apt =
-                    calendarTapDetails.appointments?.first;
-                if (apt != null) {
-                  final tarea = _tareas.firstWhere(
-                        (t) =>
-                    t.titulo == apt.subject &&
-                        t.fechaEntrega == apt.startTime,
-
-                  );
-                  if (tarea != null) {
-                    _abrirDetalleTarea(tarea);
-                  }
-                }
-              }
-            },
           );
         },
       ),
+
     );
   }
 
