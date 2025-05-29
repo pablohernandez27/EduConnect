@@ -66,7 +66,26 @@ class _DashboardPageState extends State<DashboardPage>
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-              title: Text('EduConnect', style: TextStyle(color: Colors.white)),
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    "assets/logoedu_solo.png",
+                    width: 60,
+                    height: 60,
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    "EduConnect",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              centerTitle: true,
             ),
             drawer: Drawer(
               child: ListView(
@@ -195,13 +214,8 @@ class _DashboardPageState extends State<DashboardPage>
                                   final user = FirebaseAuth.instance.currentUser;
 
                                   if (user != null) {
-                                    // 1. Eliminar datos de Firestore asociados al usuario
                                     await deleteUserFirestoreData(user.uid);
-
-                                    // 2. Eliminar usuario de Firebase Auth
                                     await user.delete();
-
-                                    // 3. Cerrar sesión y navegar a login
                                     await FirebaseAuth.instance.signOut();
                                     Navigator.pushReplacementNamed(context, '/login');
 

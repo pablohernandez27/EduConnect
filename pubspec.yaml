@@ -72,6 +72,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/logo_educonnect.png
+    - assets/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -91,6 +92,9 @@ flutter_native_splash:
   image: assets/logo_educonnect.png
   android: true
   ios: true
+  android_12:
+    image: assets/logo_educonnect.png
+    color: "#ffffff"
   android_gravity: center
   ios_content_mode: center
   fullscreen: true
