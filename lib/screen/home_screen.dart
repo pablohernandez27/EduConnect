@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     hintText: 'Buscar foros...',
                     border: InputBorder.none,
                   ),
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: TextStyle(fontSize: 18),
                   onChanged: (value) {
                     setState(() {
                       _searchQuery = value.toLowerCase();
