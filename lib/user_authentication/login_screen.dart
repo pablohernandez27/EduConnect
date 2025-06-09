@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
+        SnackBar(content: Text('Credenciales incorrectas. Por favor, revisa tu NRE y contraseña.')),
       );
     }
   }
