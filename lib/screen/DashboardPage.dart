@@ -352,7 +352,7 @@ class _DashboardPageState extends State<DashboardPage>
   Future<void> deleteUserFirestoreData(String uid) async {
     final firestore = FirebaseFirestore.instance;
 
-    // borrar colección "chats" donde participe el usuario
+    // Eliminar todos los chats donde participe el usuario
     final chatsSnapshot = await firestore
         .collection('chats')
         .where('participants', arrayContains: uid)
@@ -362,6 +362,7 @@ class _DashboardPageState extends State<DashboardPage>
       await doc.reference.delete();
     }
 
+    // Eliminar todas las tareas del usuario
     final tareasSnapshot = await firestore
         .collection('tareas')
         .where('userId', isEqualTo: uid)
@@ -371,6 +372,8 @@ class _DashboardPageState extends State<DashboardPage>
       await doc.reference.delete();
     }
 
+    // Eliminar el documento del usuario en la colección 'users'
+    await firestore.collection('users').doc(uid).delete();
   }
 
 }
