@@ -17,7 +17,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   final _tituloController = TextEditingController();
   final _descripcionController = TextEditingController();
-  DateTime? _selectedDate;
+  DateTime? _selectedDateTime;
   bool _isCompletada = false;
 
   final _firestoreService = FirestoreService();
@@ -29,7 +29,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     if (widget.tarea != null) {
       _tituloController.text = widget.tarea!.titulo;
       _descripcionController.text = widget.tarea!.descripcion ?? '';
-      _selectedDate = widget.tarea!.fechaEntrega;
+      _selectedDateTime = widget.tarea!.fechaEntrega;
       _isCompletada = widget.tarea!.completada;
     }
   }
@@ -37,14 +37,37 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   Future<void> _pickDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
+      initialDate: _selectedDateTime ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+    if (pickedDate != null) {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now()),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      } else {
+        setState(() {
+          _selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            _selectedDateTime?.hour ?? TimeOfDay.now().hour,
+            _selectedDateTime?.minute ?? TimeOfDay.now().minute,
+          );
+        });
+      }
     }
   }
 
@@ -57,7 +80,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             descripcion: _descripcionController.text.trim().isNotEmpty
                 ? _descripcionController.text.trim()
                 : null,
-            fechaEntrega: _selectedDate,
+            fechaEntrega: _selectedDateTime,
             userId: _currentUserId,
           );
           ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +93,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             descripcion: _descripcionController.text.trim().isNotEmpty
                 ? _descripcionController.text.trim()
                 : null,
-            fechaEntrega: _selectedDate,
+            fechaEntrega: _selectedDateTime,
             completada: _isCompletada,
           );
           ScaffoldMessenger.of(context).showSnackBar(
@@ -126,9 +149,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      _selectedDate == null
+                      _selectedDateTime == null
                           ? 'Fecha de Entrega: No seleccionada'
-                          : 'Fecha de Entrega: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
+                          : 'Entrega: ${DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)}',
                     ),
                   ),
                   TextButton(

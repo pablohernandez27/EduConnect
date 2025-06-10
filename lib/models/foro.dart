@@ -4,7 +4,7 @@ class Foro {
   final String id;
   final String title;
   final String description;
-  final bool isFavorite;
+  bool isFavorite;
   final String createdBy;
   final DateTime createdAt;
 

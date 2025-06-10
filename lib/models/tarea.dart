@@ -8,6 +8,7 @@ class Tarea {
   final bool completada;
   final String userId;
   final DateTime createdAt;
+  final bool tieneFechaEntrega;
 
   Tarea({
     required this.id,
@@ -17,6 +18,7 @@ class Tarea {
     required this.completada,
     required this.userId,
     required this.createdAt,
+    required this.tieneFechaEntrega,
   });
 
   factory Tarea.fromMap(String id, Map<String, dynamic> data) {
@@ -30,6 +32,7 @@ class Tarea {
       completada: data['completada'] as bool,
       userId: data['userId'] as String,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      tieneFechaEntrega: data['tieneFechaEntrega'] as bool? ?? (data['fechaEntrega'] != null),
     );
   }
 
@@ -43,6 +46,7 @@ class Tarea {
       'completada': completada,
       'userId': userId,
       'createdAt': Timestamp.fromDate(createdAt),
+      'tieneFechaEntrega': tieneFechaEntrega,
     };
   }
 }

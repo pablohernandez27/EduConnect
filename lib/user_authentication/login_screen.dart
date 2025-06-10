@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:educonnect/screen/home_screen.dart';
-import 'package:educonnect/main.dart';
+import 'package:educonnect/screen/DashboardPage.dart';
 import 'package:educonnect/user_authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
-    final email = _emailController.text.trim();
+    final email = "${_emailController.text.trim()}@alu.murciaeduca.es";
     final password = _passwordController.text.trim();
 
     try {
@@ -25,31 +24,70 @@ class _LoginScreenState extends State<LoginScreen> {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null && !user.emailVerified) {
-        // Cierra la sesión porque no verificó el correo
         await FirebaseAuth.instance.signOut();
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Debes verificar tu correo electrónico antes de continuar.'),
-          ),
+          SnackBar(content: Text('Debes verificar tu correo electrónico antes de continuar.')),
         );
         return;
       }
 
-      // Guardar el usuario en base de datos para poder hacer consultas.
       if (user != null && user.emailVerified) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'email': user.email,
-        }, SetOptions(merge: true)); // merge: true evita sobreescribir
-      }
+        }, SetOptions(merge: true));
 
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage(currentTab: 0)),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
+        SnackBar(content: Text('Credenciales incorrectas. Por favor, revisa tu usuario y contraseña.')),
       );
     }
+  }
+
+  void _showResetPasswordDialog(BuildContext context) {
+    final TextEditingController emailResetController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Restablecer contraseña'),
+        content: TextField(
+          controller: emailResetController,
+          decoration: InputDecoration(labelText: 'Número Regional de Estudiante (NRE)'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final nre = emailResetController.text.trim();
+              final email = '$nre@alu.murciaeduca.es';
+
+              try {
+                await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Correo de restablecimiento enviado a $email')),
+                );
+              } catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+              }
+            },
+            child: Text('Enviar'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -78,8 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.email),
-                    labelText: 'Correo electrónico',
+                    prefixIcon: Icon(Icons.school),
+                    labelText: 'Número Regional de estudiante',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
@@ -113,7 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       'Iniciar sesión',
                       style: TextStyle(fontSize: 16, color: Colors.white),
-
                     ),
                   ),
                 ),
@@ -133,6 +170,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+
+                TextButton(
+                  onPressed: () {
+                    _showResetPasswordDialog(context);
+                  },
+                  child: Text(
+                    '¿Olvidaste tu contraseña?',
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  ),
+                ),
               ],
             ),
           ),
@@ -140,5 +187,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
 }
