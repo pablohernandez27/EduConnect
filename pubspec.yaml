@@ -92,12 +92,7 @@ flutter_native_splash:
   image: assets/logo_educonnect.png
   android: true
   ios: true
-  android_12:
-    image: assets/logo_educonnect.png
-    color: "#ffffff"
-  android_gravity: center
-  ios_content_mode: center
-  fullscreen: true
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
