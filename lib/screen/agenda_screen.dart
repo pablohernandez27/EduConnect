@@ -91,13 +91,14 @@ class _AgendaScreenState extends State<AgendaScreen> {
         .where((t) => t.fechaEntrega != null)
         .map((t) => Appointment(
       startTime: t.fechaEntrega!,
-      endTime: t.fechaEntrega!.add(const Duration(hours: 1)),
+      endTime: t.fechaEntrega!,
       subject: t.titulo,
       notes: t.descripcion,
       color: t.completada ? Colors.grey : Colors.teal,
     ))
         .toList();
   }
+
 
   void _abrirDetalleTarea(Tarea tarea) async {
     await Navigator.push(
